@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a Job - JobFinder.net</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1><a href="job_listing.html"><i class="fas fa-hammer"></i> JobFinder.net</a></h1>
+            <p>Post jobs for free. Connect directly with workers.</p>
+            <div class="live-stats">
+                <span id="jobs-count"><i class="fas fa-briefcase"></i> <span>0</span> jobs posted today</span>
+            </div>
+        </div>
+        <nav>
+            <a href="job_listing.html"><i class="fas fa-home"></i> Home</a>
+            <a href="find_job.html"><i class="fas fa-search"></i> Find Jobs</a>
+            <a href="post_job.html" class="active"><i class="fas fa-plus-circle"></i> Post Job</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="post-job-form">
+            <h2><i class="fas fa-plus-circle"></i> Post a New Job</h2>
+            
+            <form id="job-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="job-title">Job Title*</label>
+                        <input type="text" id="job-title" placeholder="e.g., Plumber needed urgently" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="job-type">Job Type*</label>
+                        <select id="job-type" required>
+                            <option value="">Select job type...</option>
+                            <option value="construction">Construction Worker</option>
+                            <option value="driver">Driver</option>
+                            <option value="domestic">Domestic Help</option>
+                            <option value="electrician">Electrician</option>
+                            <option value="plumber">Plumber</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="job-location">Location*</label>
+                    <div class="location-input">
+                        <input type="text" id="job-location" placeholder="Area/City (e.g., Andheri East, Mumbai)" required>
+                        <button type="button" id="detect-location"><i class="fas fa-location-arrow"></i> Detect</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="job-description">Job Description</label>
+                    <textarea id="job-description" placeholder="Describe the job details, requirements, etc." rows="4"></textarea>
+                    <p class="hint">Include important details like skills needed, job duration, etc.</p>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contact-number">Your WhatsApp Number*</label>
+                        <input type="tel" id="contact-number" placeholder="Workers will contact this number" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="salary">Expected Salary</label>
+                        <input type="text" id="salary" placeholder="e.g., ₹800/day or ₹15,000/month">
+                    </div>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="urgent-hiring">
+                    <label for="urgent-hiring">Mark as Urgent Hiring <span class="urgent-badge"><i class="fas fa-bolt"></i> Urgent</span></label>
+                </div>
+                
+                <button type="submit" id="submit-btn">
+                    <span id="submit-text">Post Job Now</span>
+                    <span id="submit-spinner" class="hidden"><i class="fas fa-spinner fa-spin"></i></span>
+                </button>
+            </form>
+            
+            <div id="success-message" class="hidden">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Job Posted Successfully!</h3>
+                <p>Your job listing is now live and workers can contact you.</p>
+                <div class="success-actions">
+                    <a href="find_job.html" class="cta-button">View All Jobs</a>
+                    <button id="post-another-btn">Post Another Job</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>JobFinder.net</h3>
+                <p>Connecting workers with employers since 2024</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="job_listing.html">Home</a>
+                <a href="find_job.html">Find Jobs</a>
+                <a href="post_job.html">Post Job</a>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <a href="mailto:handedaks@gmail.com"><i class="fas fa-envelope"></i> help@jobfinder.net</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 JobFinder.net | Made with <i class="fas fa-heart"></i> for India</p>
+        </div>
+    </footer>
+
+    <!-- JSONBin API Integration -->
+    <script>
+        const API_KEY = "$2a$10$eXuA/TYMLV7YBFrJoM7V0O/ntv/mMj9QA7pJaBqo/UcL4j3E3Y6Gu";
+        const BIN_ID = "67ed6e618a456b7966814bba";
+        const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+        // DOM Elements
+        const elements = {
+            jobForm: document.getElementById("job-form"),
+            detectLocationBtn: document.getElementById("detect-location"),
+            submitBtn: document.getElementById("submit-btn"),
+            submitText: document.getElementById("submit-text"),
+            submitSpinner: document.getElementById("submit-spinner"),
+            successMessage: document.getElementById("success-message"),
+            postAnotherBtn: document.getElementById("post-another-btn"),
+            jobsCount: document.querySelector("#jobs-count span")
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchJobCount();
+            setupEventListeners();
+        });
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Location detection
+            elements.detectLocationBtn.addEventListener('click', detectLocation);
+
+            // Form submission
+            elements.jobForm.addEventListener('submit', postJob);
+
+            // Post another job button
+            elements.postAnotherBtn.addEventListener('click', resetForm);
+        }
+
+        // Fetch current job count
+        async function fetchJobCount() {
+            try {
+                const response = await fetch(`${API_URL}/latest`, {
+                    headers: { "X-Master-Key": API_KEY }
+                });
+                const data = await response.json();
+                const jobs = data.record.jobs || [];
+                
+                // Count jobs posted today
+                const today = new Date().toDateString();
+                const todaysJobs = jobs.filter(job => {
+                    const jobDate = new Date(job.timestamp).toDateString();
+                    return jobDate === today;
+                });
+                
+                elements.jobsCount.textContent = todaysJobs.length;
+            } catch (error) {
+                console.error("Failed to fetch job count:", error);
+            }
+        }
+
+        // Detect user location (simulated in this example)
+        function detectLocation() {
+            const locationInput = document.getElementById("job-location");
+            locationInput.placeholder = "Detecting location...";
+            elements.detectLocationBtn.disabled = true;
+            
+            // Simulate location detection (in a real app, use Geolocation API)
+            setTimeout(() => {
+                const locations = [
+                    "Mumbai, Maharashtra",
+                    "Delhi",
+                    "Bangalore, Karnataka",
+                    "Hyderabad, Telangana",
+                    "Chennai, Tamil Nadu"
+                ];
+                const randomLocation = locations[Math.floor(Math.random() * locations.length)];
+                locationInput.value = randomLocation;
+                locationInput.placeholder = "Area/City (e.g., Andheri East, Mumbai)";
+                elements.detectLocationBtn.disabled = false;
+                showNotification(`Location set to ${randomLocation}`);
+            }, 1500);
+        }
+
+        // Post new job
+        async function postJob(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById("job-title").value.trim();
+            const type = document.getElementById("job-type").value;
+            const location = document.getElementById("job-location").value.trim();
+            const description = document.getElementById("job-description").value.trim();
+            const contact = document.getElementById("contact-number").value.trim();
+            const salary = document.getElementById("salary").value.trim();
+            const urgent = document.getElementById("urgent-hiring").checked;
+            
+            // Validate required fields
+            if (!title || !type || !location || !contact) {
+                showNotification("Please fill all required fields");
+                return;
+            }
+            
+            // Validate Indian phone number
+            const phoneRegex = /^[6-9]\d{9}$/;
+            const digitsOnly = contact.replace(/\D/g, '');
+            if (!phoneRegex.test(digitsOnly)) {
+                showNotification("Please enter a valid Indian phone number");
+                return;
+            }
+            
+            // Show loading state
+            elements.submitText.textContent = "Posting...";
+            elements.submitSpinner.classList.remove('hidden');
+            elements.submitBtn.disabled = true;
+            
+            try {
+                // 1. Fetch existing jobs
+                const response = await fetch(`${API_URL}/latest`, {
+                    headers: { "X-Master-Key": API_KEY }
+                });
+                
+                if (!response.ok) throw new Error('Failed to fetch existing jobs');
+                
+                const data = await response.json();
+                const jobs = data.record.jobs || [];
+                
+                // 2. Add new job
+                const newJob = {
+                    title,
+                    type,
+                    location,
+                    description,
+                    contact: digitsOnly,
+                    salary,
+                    urgent,
+                    timestamp: Date.now()
+                };
+                
+                jobs.push(newJob);
+                
+                // 3. Update JSONBin
+                const updateResponse = await fetch(API_URL, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Master-Key": API_KEY
+                    },
+                    body: JSON.stringify({ jobs })
+                });
+                
+                if (!updateResponse.ok) throw new Error('Failed to post job');
+                
+                // 4. Show success
+                elements.jobForm.classList.add('hidden');
+                elements.successMessage.classList.remove('hidden');
+                
+                // 5. Update job count
+                fetchJobCount();
+                
+                // 6. Show notification
+                showNotification("Job posted successfully!");
+                
+            } catch (error) {
+                console.error("Error posting job:", error);
+                showNotification("Failed to post job. Please try again.");
+            } finally {
+                // Reset button state
+                elements.submitText.textContent = "Post Job Now";
+                elements.submitSpinner.classList.add('hidden');
+                elements.submitBtn.disabled = false;
+            }
+        }
+
+        // Reset form after successful submission
+        function resetForm() {
+            elements.jobForm.reset();
+            elements.jobForm.classList.remove('hidden');
+            elements.successMessage.classList.add('hidden');
+        }
+
+        // Show notification toast
+        function showNotification(message) {
+            const toast = document.createElement('div');
+            toast.className = 'notification-toast';
+            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }, 10);
+        }
+    </script>
+</body>
+</html>
