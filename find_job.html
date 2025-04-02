@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Jobs - JobFinder.net</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1><a href="job_listing.html"><i class="fas fa-hammer"></i> JobFinder.net</a></h1>
+            <p>Discover daily wage jobs in your area. No middlemen. No fees.</p>
+            <div class="live-stats">
+                <span id="jobs-count"><i class="fas fa-briefcase"></i> <span>0</span> jobs available</span>
+                <span id="last-updated"><i class="fas fa-sync-alt"></i> Updated just now</span>
+            </div>
+        </div>
+        <nav>
+            <a href="job_listing.html"><i class="fas fa-home"></i> Home</a>
+            <a href="find_job.html" class="active"><i class="fas fa-search"></i> Find Jobs</a>
+            <a href="post_job.html"><i class="fas fa-plus-circle"></i> Post Job</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Search Filters -->
+        <section id="search-filters">
+            <div class="search-box">
+                <input type="text" id="search-keyword" placeholder="Job title or skills (e.g. plumber, driver)">
+                <input type="text" id="search-location" placeholder="Location (e.g. Delhi, Mumbai)">
+                <select id="job-category">
+                    <option value="">All Categories</option>
+                    <option value="construction">Construction</option>
+                    <option value="driver">Driver</option>
+                    <option value="domestic">Domestic Help</option>
+                    <option value="electrician">Electrician</option>
+                    <option value="plumber">Plumber</option>
+                </select>
+                <button id="search-btn"><i class="fas fa-search"></i> Search</button>
+                <button id="detect-location"><i class="fas fa-location-arrow"></i> Near Me</button>
+            </div>
+            <div class="sort-options">
+                <span>Sort by:</span>
+                <button class="sort-btn active" data-sort="newest">Newest</button>
+                <button class="sort-btn" data-sort="salary">Highest Pay</button>
+                <button class="sort-btn" data-sort="location">Nearest</button>
+            </div>
+        </section>
+
+        <!-- Job Listings -->
+        <section id="job-listings">
+            <div class="section-header">
+                <h2><i class="fas fa-list"></i> Available Jobs</h2>
+                <div class="refresh-btn" id="refresh-jobs">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </div>
+            </div>
+            
+            <div id="loading-indicator">
+                <div class="skeleton-loader"></div>
+                <div class="skeleton-loader"></div>
+                <div class="skeleton-loader"></div>
+            </div>
+            
+            <div id="jobs-container"></div>
+            
+            <div id="no-jobs" class="hidden">
+                <i class="fas fa-inbox"></i>
+                <h3>No jobs found</h3>
+                <p>Try changing your search filters or <a href="post_job.html">post a job</a> instead.</p>
+            </div>
+        </section>
+
+        <!-- Emergency Section -->
+        <section id="emergency-jobs">
+            <h2><i class="fas fa-bolt"></i> Urgent Hiring</h2>
+            <div id="emergency-container"></div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>JobFinder.net</h3>
+                <p>Connecting workers with employers since 2024</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="job_listing.html">Home</a>
+                <a href="find_job.html">Find Jobs</a>
+                <a href="post_job.html">Post Job</a>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <a href="mailto:handedaksh@gmail.com"><i class="fas fa-envelope"></i> help@jobfinder.net</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 JobFinder.net | Made with <i class="fas fa-heart"></i> for India</p>
+        </div>
+    </footer>
+
+    <!-- JSONBin API Integration -->
+    <script>
+        const API_KEY = "$2a$10$eXuA/TYMLV7YBFrJoM7V0O/ntv/mMj9QA7pJaBqo/UcL4j3E3Y6Gu";
+        const BIN_ID = "67ed6e618a456b7966814bba";
+        const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+        
+        // Global variables
+        let allJobs = [];
+        let currentSort = "newest";
+        let autoRefreshInterval;
+
+        // DOM Elements
+        const elements = {
+            jobsContainer: document.getElementById("jobs-container"),
+            emergencyContainer: document.getElementById("emergency-container"),
+            loadingIndicator: document.getElementById("loading-indicator"),
+            noJobsMessage: document.getElementById("no-jobs"),
+            searchKeyword: document.getElementById("search-keyword"),
+            searchLocation: document.getElementById("search-location"),
+            jobCategory: document.getElementById("job-category"),
+            searchBtn: document.getElementById("search-btn"),
+            detectLocation: document.getElementById("detect-location"),
+            refreshBtn: document.getElementById("refresh-jobs"),
+            sortButtons: document.querySelectorAll(".sort-btn"),
+            jobsCount: document.querySelector("#jobs-count span"),
+            lastUpdated: document.getElementById("last-updated")
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadJobs();
+            setupEventListeners();
+            startAutoRefresh();
+        });
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Search functionality
+            elements.searchBtn.addEventListener('click', filterJobs);
+            elements.searchKeyword.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') filterJobs();
+            });
+            elements.searchLocation.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') filterJobs();
+            });
+            elements.jobCategory.addEventListener('change', filterJobs);
+
+            // Location detection
+            elements.detectLocation.addEventListener('click', detectLocation);
+
+            // Refresh jobs
+            elements.refreshBtn.addEventListener('click', () => {
+                loadJobs();
+                showNotification("Jobs refreshed!");
+            });
+
+            // Sort functionality
+            elements.sortButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    elements.sortButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentSort = this.dataset.sort;
+                    filterJobs();
+                });
+            });
+        }
+
+        // Auto-refresh jobs every 2 minutes
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(() => {
+                loadJobs();
+                updateLastUpdatedTime();
+            }, 120000); // 2 minutes
+        }
+
+        // Update last updated time
+        function updateLastUpdatedTime() {
+            const now = new Date();
+            elements.lastUpdated.innerHTML = `<i class="fas fa-sync-alt"></i> Updated at ${now.toLocaleTimeString()}`;
+        }
+
+        // Load jobs from JSONBin
+        async function loadJobs() {
+            try {
+                showLoadingState();
+                
+                const response = await fetch(`${API_URL}/latest`, {
+                    headers: { "X-Master-Key": API_KEY }
+                });
+                
+                if (!response.ok) throw new Error('Failed to fetch jobs');
+                
+                const data = await response.json();
+                allJobs = data.record.jobs || [];
+                
+                // Update job count
+                elements.jobsCount.textContent = allJobs.length;
+                updateLastUpdatedTime();
+                
+                // Render jobs
+                filterJobs();
+                
+            } catch (error) {
+                console.error("Failed to load jobs:", error);
+                showErrorState();
+            }
+        }
+
+        // Show loading state
+        function showLoadingState() {
+            elements.jobsContainer.innerHTML = '';
+            elements.emergencyContainer.innerHTML = '';
+            elements.loadingIndicator.classList.remove('hidden');
+            elements.noJobsMessage.classList.add('hidden');
+        }
+
+        // Show error state
+        function showErrorState() {
+            elements.loadingIndicator.classList.add('hidden');
+            elements.jobsContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Failed to load jobs</h3>
+                    <p>Please check your internet connection and try again.</p>
+                    <button onclick="loadJobs()"><i class="fas fa-sync-alt"></i> Retry</button>
+                </div>
+            `;
+        }
+
+        // Filter and sort jobs
+        function filterJobs() {
+            const keyword = elements.searchKeyword.value.toLowerCase();
+            const location = elements.searchLocation.value.toLowerCase();
+            const category = elements.jobCategory.value.toLowerCase();
+            
+            let filteredJobs = allJobs.filter(job => {
+                const matchesKeyword = keyword === '' || 
+                    job.title.toLowerCase().includes(keyword) || 
+                    (job.description && job.description.toLowerCase().includes(keyword));
+                
+                const matchesLocation = location === '' || 
+                    job.location.toLowerCase().includes(location);
+                
+                const matchesCategory = category === '' || 
+                    (job.category && job.category.toLowerCase() === category);
+                
+                return matchesKeyword && matchesLocation && matchesCategory;
+            });
+            
+            // Sort jobs
+            filteredJobs = sortJobs(filteredJobs);
+            
+            // Separate emergency jobs
+            const emergencyJobs = filteredJobs.filter(job => job.urgent);
+            const regularJobs = filteredJobs.filter(job => !job.urgent);
+            
+            renderJobs(regularJobs, elements.jobsContainer);
+            renderJobs(emergencyJobs, elements.emergencyContainer);
+            
+            // Update UI based on results
+            elements.loadingIndicator.classList.add('hidden');
+            
+            if (filteredJobs.length === 0) {
+                elements.noJobsMessage.classList.remove('hidden');
+            } else {
+                elements.noJobsMessage.classList.add('hidden');
+            }
+        }
+
+        // Sort jobs based on current sort option
+        function sortJobs(jobs) {
+            switch(currentSort) {
+                case "newest":
+                    return [...jobs].sort((a, b) => b.timestamp - a.timestamp);
+                case "salary":
+                    return [...jobs].sort((a, b) => {
+                        const salaryA = parseSalary(a.salary);
+                        const salaryB = parseSalary(b.salary);
+                        return salaryB - salaryA;
+                    });
+                case "location":
+                    // In a real app, this would sort by actual distance
+                    return [...jobs].sort((a, b) => a.location.localeCompare(b.location));
+                default:
+                    return jobs;
+            }
+        }
+
+        // Helper to parse salary strings (e.g., "₹500/day" → 500)
+        function parseSalary(salaryStr) {
+            if (!salaryStr) return 0;
+            const match = salaryStr.match(/₹(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+        }
+
+        // Render jobs to the container
+        function renderJobs(jobs, container) {
+            if (!jobs || jobs.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            jobs.forEach(job => {
+                const timeAgo = getTimeAgo(job.timestamp);
+                const isEmergency = job.urgent;
+                
+                html += `
+                    <div class="job-card ${isEmergency ? 'urgent' : ''}">
+                        <div class="job-header">
+                            <h3>${job.title}</h3>
+                            ${isEmergency ? '<span class="urgent-badge"><i class="fas fa-bolt"></i> Urgent</span>' : ''}
+                            ${job.category ? `<span class="category-badge ${job.category}">${formatCategory(job.category)}</span>` : ''}
+                        </div>
+                        <div class="job-details">
+                            <p><i class="fas fa-map-marker-alt"></i> ${job.location}</p>
+                            ${job.salary ? `<p><i class="fas fa-rupee-sign"></i> ${job.salary}</p>` : ''}
+                            <p class="post-time"><i class="far fa-clock"></i> ${timeAgo}</p>
+                            ${job.description ? `<p class="job-description">${job.description}</p>` : ''}
+                        </div>
+                        <div class="job-actions">
+                            <a href="tel:${job.contact}" class="call-btn"><i class="fas fa-phone"></i> Call</a>
+                            <a href="https://wa.me/91${job.contact.replace(/\D/g, '')}" class="whatsapp-btn" target="_blank">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Detect user location (simulated in this example)
+        function detectLocation() {
+            elements.searchLocation.placeholder = "Detecting location...";
+            
+            // Simulate location detection (in a real app, use Geolocation API)
+            setTimeout(() => {
+                const locations = [
+                    "Mumbai, Maharashtra",
+                    "Delhi",
+                    "Bangalore, Karnataka",
+                    "Hyderabad, Telangana",
+                    "Chennai, Tamil Nadu"
+                ];
+                const randomLocation = locations[Math.floor(Math.random() * locations.length)];
+                elements.searchLocation.value = randomLocation;
+                elements.searchLocation.placeholder = "Location (e.g. Delhi, Mumbai)";
+                showNotification(`Location set to ${randomLocation}`);
+                filterJobs();
+            }, 1000);
+        }
+
+        // Show notification toast
+        function showNotification(message) {
+            const toast = document.createElement('div');
+            toast.className = 'notification-toast';
+            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }, 10);
+        }
+
+        // Helper to format time ago
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            
+            if (seconds < 60) return "just now";
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+            return `${Math.floor(seconds / 86400)} days ago`;
+        }
+
+        // Helper to format category
+        function formatCategory(category) {
+            const categories = {
+                construction: "Construction",
+                driver: "Driver",
+                domestic: "Domestic Help",
+                electrician: "Electrician",
+                plumber: "Plumber"
+            };
+            return categories[category] || category;
+        }
+    </script>
+</body>
+</html>
