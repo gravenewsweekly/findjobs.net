@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobFinder.net - Real-Time Daily Work Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1><i class="fas fa-hammer"></i> JobFinder.net</h1>
+            <p>Connecting workers with employers in real-time. 100% free.</p>
+            <div class="stats-bar">
+                <span id="total-jobs"><i class="fas fa-briefcase"></i> <span id="jobs-count">0</span> jobs</span>
+                <span id="last-updated"><i class="fas fa-clock"></i> Updated: Just now</span>
+            </div>
+        </div>
+        <nav>
+            <a href="#find-jobs" class="active"><i class="fas fa-search"></i> Find Jobs</a>
+            <a href="#post-job"><i class="fas fa-plus-circle"></i> Post Job</a>
+            <a href="#how-it-works"><i class="fas fa-question-circle"></i> How It Works</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- SECTION 1: Find Jobs -->
+        <section id="find-jobs">
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search jobs (e.g. 'driver', 'delhi')">
+                <select id="job-type-filter">
+                    <option value="">All Types</option>
+                    <option value="construction">Construction</option>
+                    <option value="driver">Driver</option>
+                    <option value="domestic">Domestic Help</option>
+                    <option value="electrician">Electrician</option>
+                    <option value="plumber">Plumber</option>
+                </select>
+                <button id="search-btn"><i class="fas fa-search"></i> Search</button>
+            </div>
+            
+            <div class="sort-options">
+                <span>Sort by:</span>
+                <button class="sort-btn active" data-sort="newest">Newest First</button>
+                <button class="sort-btn" data-sort="nearest">Nearest First</button>
+            </div>
+            
+            <div id="job-listings">
+                <div class="skeleton-loader"></div>
+                <div class="skeleton-loader"></div>
+            </div>
+            
+            <div id="no-jobs-message" class="hidden">
+                <i class="fas fa-inbox"></i>
+                <p>No jobs found matching your criteria.</p>
+                <a href="#post-job" class="cta-button">Post a Job Instead</a>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Post a Job -->
+        <section id="post-job" class="hidden">
+            <h2><i class="fas fa-plus-circle"></i> Post a New Job</h2>
+            <form id="job-form">
+                <div class="form-group">
+                    <label for="job-title">Job Title*</label>
+                    <input type="text" id="job-title" placeholder="e.g., Plumber needed urgently" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="job-type">Job Type*</label>
+                    <select id="job-type" required>
+                        <option value="">Select...</option>
+                        <option value="construction">Construction Worker</option>
+                        <option value="driver">Driver</option>
+                        <option value="domestic">Domestic Help</option>
+                        <option value="electrician">Electrician</option>
+                        <option value="plumber">Plumber</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="location">Location*</label>
+                    <div class="location-input">
+                        <input type="text" id="location" placeholder="Area/City (e.g., Andheri East, Mumbai)" required>
+                        <button type="button" id="detect-location"><i class="fas fa-location-arrow"></i> Detect</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contact">Your WhatsApp Number*</label>
+                    <input type="tel" id="contact" placeholder="Workers will contact this number" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="salary">Expected Salary (Optional)</label>
+                    <input type="text" id="salary" placeholder="e.g., ₹800/day or ₹15,000/month">
+                </div>
+                
+                <button type="submit" id="submit-btn">
+                    <span id="submit-text">Post Job Now</span>
+                    <span id="submit-spinner" class="hidden"><i class="fas fa-spinner fa-spin"></i></span>
+                </button>
+            </form>
+            
+            <div id="success-message" class="hidden">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Job Posted Successfully!</h3>
+                <p>Workers can now see your listing. You may receive calls shortly.</p>
+                <div class="success-actions">
+                    <a href="#find-jobs" class="cta-button">View All Jobs</a>
+                    <button id="post-another-btn">Post Another Job</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: How It Works -->
+        <section id="how-it-works" class="hidden">
+            <h2><i class="fas fa-question-circle"></i> How JobFinder Works</h2>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Post a Job</h3>
+                    <p>Employers list jobs for free with just title, location and contact.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Workers Find It</h3>
+                    <p>Job appears instantly in search results for nearby workers.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Direct Contact</h3>
+                    <p>Workers call the employer directly - no middlemen or commissions.</p>
+                </div>
+            </div>
+            
+            <div class="safety-tips">
+                <h3><i class="fas fa-shield-alt"></i> Safety Tips</h3>
+                <ul>
+                    <li>Meet in public places for interviews</li>
+                    <li>Verify worker's identity before hiring</li>
+                    <li>Don't share sensitive personal information</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>JobFinder.net</h3>
+                <p>Real-time job matching platform for daily wage workers in India.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="find_jobs.html">Find Jobs</a>
+                <a href="post_job.html">Post a Job</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="about.html">About Us</a>
+                <a href="terms.html">Terms&Conditions</a>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <a href="mailto:handedaksh@gmail.com"><i class="fas fa-envelope"></i> help@jobfinder.net</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 JobFinder.net | Made with <i class="fas fa-heart"></i> for India</p>
+        </div>
+    </footer>
+
+    <!-- JSONBin API Integration -->
+    <script>
+        const API_KEY = "$2a$10$eXuA/TYMLV7YBFrJoM7V0O/ntv/mMj9QA7pJaBqo/UcL4j3E3Y6Gu";
+        const BIN_ID = "67ed6e618a456b7966814bba";
+        const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+        let allJobs = [];
+        let currentSort = "newest";
+
+        // DOM Elements
+        const elements = {
+            jobListings: document.getElementById("job-listings"),
+            jobForm: document.getElementById("job-form"),
+            searchInput: document.getElementById("search-input"),
+            jobTypeFilter: document.getElementById("job-type-filter"),
+            searchBtn: document.getElementById("search-btn"),
+            sortButtons: document.querySelectorAll(".sort-btn"),
+            noJobsMessage: document.getElementById("no-jobs-message"),
+            totalJobs: document.getElementById("jobs-count"),
+            lastUpdated: document.getElementById("last-updated"),
+            detectLocationBtn: document.getElementById("detect-location"),
+            submitBtn: document.getElementById("submit-btn"),
+            submitText: document.getElementById("submit-text"),
+            submitSpinner: document.getElementById("submit-spinner"),
+            successMessage: document.getElementById("success-message"),
+            postAnotherBtn: document.getElementById("post-another-btn")
+        };
+
+        // Navigation
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = this.getAttribute('href');
+                
+                // Hide all sections
+                document.querySelectorAll('main > section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+                
+                // Show target section
+                document.querySelector(target).classList.remove('hidden');
+                
+                // Update active nav link
+                document.querySelectorAll('nav a').forEach(navLink => {
+                    navLink.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // If going to find jobs, refresh listings
+                if (target === '#find-jobs') {
+                    loadJobs();
+                }
+            });
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadJobs();
+            setupEventListeners();
+            startAutoRefresh();
+        });
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Search functionality
+            elements.searchBtn.addEventListener('click', () => filterJobs());
+            elements.searchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') filterJobs();
+            });
+            elements.jobTypeFilter.addEventListener('change', () => filterJobs());
+
+            // Sort functionality
+            elements.sortButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    elements.sortButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentSort = this.dataset.sort;
+                    renderJobs(allJobs);
+                });
+            });
+
+            // Location detection
+            elements.detectLocationBtn.addEventListener('click', detectLocation);
+
+            // Form submission
+            elements.jobForm.addEventListener('submit', postJob);
+
+            // Post another job button
+            elements.postAnotherBtn.addEventListener('click', () => {
+                elements.successMessage.classList.add('hidden');
+                elements.jobForm.classList.remove('hidden');
+                elements.jobForm.reset();
+            });
+        }
+
+        // Auto-refresh jobs every 2 minutes
+        function startAutoRefresh() {
+            setInterval(() => {
+                if (!document.querySelector('#find-jobs').classList.contains('hidden')) {
+                    loadJobs();
+                    elements.lastUpdated.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+                }
+            }, 120000);
+        }
+
+        // Load jobs from JSONBin
+        async function loadJobs() {
+            try {
+                // Show loading state
+                elements.jobListings.innerHTML = `
+                    <div class="skeleton-loader"></div>
+                    <div class="skeleton-loader"></div>
+                `;
+                
+                const response = await fetch(`${API_URL}/latest`, {
+                    headers: { "X-Master-Key": API_KEY }
+                });
+                
+                if (!response.ok) throw new Error('Failed to fetch jobs');
+                
+                const data = await response.json();
+                allJobs = data.record.jobs || [];
+                
+                // Update job count
+                elements.totalJobs.textContent = allJobs.length;
+                
+                // Render jobs
+                renderJobs(allJobs);
+                
+            } catch (error) {
+                console.error("Failed to load jobs:", error);
+                elements.jobListings.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Failed to load jobs. Please try again later.</p>
+                        <button onclick="loadJobs()"><i class="fas fa-sync-alt"></i> Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Filter jobs based on search criteria
+        function filterJobs() {
+            const searchTerm = elements.searchInput.value.toLowerCase();
+            const jobType = elements.jobTypeFilter.value.toLowerCase();
+            
+            let filteredJobs = allJobs;
+            
+            // Apply search term filter
+            if (searchTerm) {
+                filteredJobs = filteredJobs.filter(job => 
+                    job.title.toLowerCase().includes(searchTerm) || 
+                    job.location.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Apply job type filter
+            if (jobType) {
+                filteredJobs = filteredJobs.filter(job => 
+                    job.type && job.type.toLowerCase() === jobType
+                );
+            }
+            
+            renderJobs(filteredJobs);
+        }
+
+        // Render jobs to the page
+        function renderJobs(jobs) {
+            if (jobs.length === 0) {
+                elements.jobListings.innerHTML = '';
+                elements.noJobsMessage.classList.remove('hidden');
+                return;
+            }
+            
+            elements.noJobsMessage.classList.add('hidden');
+            
+            // Sort jobs
+            let sortedJobs = [...jobs];
+            if (currentSort === "newest") {
+                sortedJobs.sort((a, b) => b.timestamp - a.timestamp);
+            } else if (currentSort === "nearest") {
+                // Simple "nearest" simulation - would use geolocation in real app
+                sortedJobs.sort((a, b) => a.location.localeCompare(b.location));
+            }
+            
+            // Generate HTML
+            let html = '';
+            sortedJobs.forEach(job => {
+                const jobDate = new Date(job.timestamp);
+                const timeAgo = getTimeAgo(job.timestamp);
+                
+                html += `
+                    <div class="job-card" data-job-type="${job.type || 'other'}">
+                        <div class="job-header">
+                            <h3>${job.title}</h3>
+                            ${job.type ? `<span class="job-type-badge ${job.type}">${formatJobType(job.type)}</span>` : ''}
+                        </div>
+                        <div class="job-details">
+                            <p><i class="fas fa-map-marker-alt"></i> ${job.location}</p>
+                            ${job.salary ? `<p><i class="fas fa-rupee-sign"></i> ${job.salary}</p>` : ''}
+                            <p class="job-posted"><i class="far fa-clock"></i> Posted ${timeAgo}</p>
+                        </div>
+                        <div class="job-actions">
+                            <a href="tel:${job.contact}" class="call-button"><i class="fas fa-phone"></i> Call Now</a>
+                            <a href="https://wa.me/91${job.contact.replace(/\D/g, '')}" class="whatsapp-button" target="_blank">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            elements.jobListings.innerHTML = html;
+        }
+
+        // Post new job
+        async function postJob(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById("job-title").value.trim();
+            const type = document.getElementById("job-type").value;
+            const location = document.getElementById("location").value.trim();
+            const contact = document.getElementById("contact").value.trim();
+            const salary = document.getElementById("salary").value.trim();
+            
+            // Simple validation
+            if (!title || !type || !location || !contact) {
+                alert("Please fill all required fields");
+                return;
+            }
+            
+            // Validate Indian phone number
+            const phoneRegex = /^[6-9]\d{9}$/;
+            const digitsOnly = contact.replace(/\D/g, '');
+            if (!phoneRegex.test(digitsOnly)) {
+                alert("Please enter a valid Indian phone number");
+                return;
+            }
+            
+            // Show loading state
+            elements.submitText.textContent = "Posting...";
+            elements.submitSpinner.classList.remove('hidden');
+            elements.submitBtn.disabled = true;
+            
+            try {
+                // 1. Fetch existing jobs
+                const response = await fetch(`${API_URL}/latest`, {
+                    headers: { "X-Master-Key": API_KEY }
+                });
+                
+                if (!response.ok) throw new Error('Failed to fetch existing jobs');
+                
+                const data = await response.json();
+                const jobs = data.record.jobs || [];
+                
+                // 2. Add new job
+                const newJob = {
+                    title,
+                    type,
+                    location,
+                    contact: digitsOnly, // Store only digits
+                    salary,
+                    timestamp: Date.now()
+                };
+                
+                jobs.push(newJob);
+                
+                // 3. Update JSONBin
+                const updateResponse = await fetch(API_URL, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Master-Key": API_KEY
+                    },
+                    body: JSON.stringify({ jobs })
+                });
+                
+                if (!updateResponse.ok) throw new Error('Failed to post job');
+                
+                // 4. Show success
+                elements.jobForm.classList.add('hidden');
+                elements.successMessage.classList.remove('hidden');
+                
+                // 5. Update local jobs list and render
+                allJobs = jobs;
+                elements.totalJobs.textContent = allJobs.length;
+                
+            } catch (error) {
+                console.error("Error posting job:", error);
+                alert("Failed to post job. Please try again.");
+            } finally {
+                // Reset button state
+                elements.submitText.textContent = "Post Job Now";
+                elements.submitSpinner.classList.add('hidden');
+                elements.submitBtn.disabled = false;
+            }
+        }
+
+        // Detect location
+        function detectLocation() {
+            const locationInput = document.getElementById("location");
+            locationInput.placeholder = "Detecting...";
+            
+            // Simulate location detection (in real app would use Geolocation API)
+            setTimeout(() => {
+                const fakeLocations = [
+                    "Mumbai, Maharashtra",
+                    "Delhi",
+                    "Bangalore, Karnataka",
+                    "Hyderabad, Telangana",
+                    "Chennai, Tamil Nadu"
+                ];
+                const randomLocation = fakeLocations[Math.floor(Math.random() * fakeLocations.length)];
+                locationInput.value = randomLocation;
+                locationInput.placeholder = "Area/City (e.g., Andheri East, Mumbai)";
+            }, 1500);
+        }
+
+        // Helper functions
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            
+            if (seconds < 60) return "just now";
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+            return `${Math.floor(seconds / 86400)} days ago`;
+        }
+
+        function formatJobType(type) {
+            const types = {
+                construction: "Construction",
+                driver: "Driver",
+                domestic: "Domestic Help",
+                electrician: "Electrician",
+                plumber: "Plumber",
+                other: "Other"
+            };
+            return types[type] || type;
+        }
+    </script>
+</body>
+</html>
